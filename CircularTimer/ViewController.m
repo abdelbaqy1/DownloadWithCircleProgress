@@ -10,6 +10,8 @@
 
 @interface ViewController ()<NSURLSessionDownloadDelegate>{
     CAShapeLayer *shape;
+    CAShapeLayer *pulseShape,*pulseShape2;
+    UILabel *lblProgress;
 }
 
 @end
@@ -20,30 +22,85 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view, typically from a nib.
     
-    
+    self.view.backgroundColor = [UIColor blackColor];
     CAShapeLayer *placeHolderShape = [[CAShapeLayer alloc] init];
     
-    CGPoint center = self.view.center;
     UIBezierPath *path = [[UIBezierPath alloc] init];
-    [path   addArcWithCenter:center radius:100.0 startAngle:-M_PI_2 endAngle:M_PI_2 *4 clockwise:true];
+    [path   addArcWithCenter:CGPointZero radius:100.0 startAngle:-M_PI_2 endAngle:M_PI_2 *4 clockwise:true];
+    
+    pulseShape = [[CAShapeLayer alloc] init];
+    pulseShape.path = path.CGPath;
+    pulseShape.strokeColor = [UIColor clearColor].CGColor;
+    pulseShape.lineWidth = 10;
+    pulseShape.position = self.view.center;
+    pulseShape.lineCap = kCALineCapRound;
+    pulseShape.fillColor =  [UIColor colorWithRed:0.95 green:0.27 blue:0.27 alpha:0.4].CGColor;
+    [self.view.layer addSublayer:pulseShape];
+    
+    pulseShape2 = [[CAShapeLayer alloc] init];
+    pulseShape2.path = path.CGPath;
+    pulseShape2.strokeColor = [UIColor clearColor].CGColor;
+    pulseShape2.lineWidth = 10;
+    pulseShape2.position = self.view.center;
+    pulseShape2.lineCap = kCALineCapRound;
+    pulseShape2.fillColor =  [UIColor colorWithRed:0.95 green:0.27 blue:0.27 alpha:0.6].CGColor;
+    [self.view.layer addSublayer:pulseShape2];
+    
     placeHolderShape.path = path.CGPath;
-    placeHolderShape.strokeColor = [UIColor grayColor].CGColor;
+    placeHolderShape.strokeColor =   [UIColor colorWithRed:0.95 green:0.27 blue:0.27 alpha:1.0].CGColor;
     placeHolderShape.lineWidth = 10;
+    placeHolderShape.position = self.view.center;
     placeHolderShape.lineCap = kCALineCapRound;
-    placeHolderShape.fillColor = [UIColor clearColor].CGColor;
+    placeHolderShape.fillColor = [UIColor blackColor].CGColor;
     [self.view.layer addSublayer:placeHolderShape];
 
+    [self aniamatitePulsingLayer];
     
     shape = [[CAShapeLayer alloc] init];
     shape.path = path.CGPath;
     shape.strokeColor = [UIColor greenColor].CGColor;
-    shape.lineWidth = 10;
+    shape.lineWidth = 20;
     shape.strokeEnd = 0.0;
-  //  shape.transform = CATransform3DMakeRotation(-M_PI_2, 0, 0, 1);
+    shape.position = self.view.center;
     shape.lineCap = kCALineCapRound;
     shape.fillColor = [UIColor clearColor].CGColor;
     [self.view.layer addSublayer:shape];
+    
     [self.view addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapCircle)]];
+    [self addProgressLabel];
+}
+
+-(void) addProgressLabel{
+    
+    lblProgress = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 90, 50)];
+    lblProgress.center = self.view.center;
+    [lblProgress setText:@"Start"];
+    [lblProgress setFont:[UIFont systemFontOfSize:40]];
+    [lblProgress setTextColor:[UIColor whiteColor]];
+    [lblProgress setTextAlignment:NSTextAlignmentCenter];
+    lblProgress.adjustsFontSizeToFitWidth=YES;
+    lblProgress.minimumScaleFactor = 0.5;
+    [self.view addSubview:lblProgress];
+}
+
+-(void) aniamatitePulsingLayer{
+    CABasicAnimation * animate = [[CABasicAnimation alloc] init];
+    animate.keyPath = @"transform.scale";
+    animate.toValue = @(1.2);
+    animate.duration = 0.8;
+    animate.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+    animate.autoreverses = true;
+    animate.repeatCount = INFINITY;
+    [pulseShape addAnimation:animate forKey:@"pulsing"];
+    
+    CABasicAnimation * animate2 = [[CABasicAnimation alloc] init];
+    animate2.keyPath = @"transform.scale";
+    animate2.toValue = @(1.15);
+    animate2.duration = 0.8;
+    animate2.timingFunction = [CAMediaTimingFunction functionWithName:kCAMediaTimingFunctionEaseOut];
+    animate2.autoreverses = true;
+    animate2.repeatCount = INFINITY;
+    [pulseShape2 addAnimation:animate2 forKey:@"pulsing"];
 }
 
 -(void) tapCircle{
@@ -73,15 +130,19 @@
 
 -(void)URLSession:(NSURLSession *)session downloadTask:(NSURLSessionDownloadTask *)downloadTask didWriteData:(int64_t)bytesWritten totalBytesWritten:(int64_t)totalBytesWritten totalBytesExpectedToWrite:(int64_t)totalBytesExpectedToWrite{
     NSLog(@"%f" ,(CGFloat) totalBytesWritten / (CGFloat)totalBytesExpectedToWrite);
-    
+    CGFloat progress = (CGFloat)totalBytesWritten / (CGFloat)totalBytesExpectedToWrite;
     dispatch_async(dispatch_get_main_queue(), ^{
-        self->shape.strokeEnd = (CGFloat)totalBytesWritten / (CGFloat)totalBytesExpectedToWrite;
+        self->shape.strokeEnd = progress;
+        [self->lblProgress setText:[NSString stringWithFormat:@"%0.1f %@",progress*100.0,@"%"]];
     });
 
 }
 
 - (void)URLSession:(nonnull NSURLSession *)session downloadTask:(nonnull NSURLSessionDownloadTask *)downloadTask didFinishDownloadingToURL:(nonnull NSURL *)location {
-    
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [self->lblProgress setText:@"Complete"];
+    });
+
 }
 
 @end
