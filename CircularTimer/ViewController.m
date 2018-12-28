@@ -18,25 +18,18 @@
 
 @implementation ViewController
 
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    // Do any additional setup after loading the view, typically from a nib.
-    
-    self.view.backgroundColor = [UIColor blackColor];
+- (void)addPlacHolderLayerWithPath:(UIBezierPath *)path {
     CAShapeLayer *placeHolderShape = [[CAShapeLayer alloc] init];
-    
-    UIBezierPath *path = [[UIBezierPath alloc] init];
-    [path   addArcWithCenter:CGPointZero radius:100.0 startAngle:-M_PI_2 endAngle:M_PI_2 *4 clockwise:true];
-    
-    pulseShape = [[CAShapeLayer alloc] init];
-    pulseShape.path = path.CGPath;
-    pulseShape.strokeColor = [UIColor clearColor].CGColor;
-    pulseShape.lineWidth = 10;
-    pulseShape.position = self.view.center;
-    pulseShape.lineCap = kCALineCapRound;
-    pulseShape.fillColor =  [UIColor colorWithRed:0.95 green:0.27 blue:0.27 alpha:0.4].CGColor;
-    [self.view.layer addSublayer:pulseShape];
-    
+    placeHolderShape.path = path.CGPath;
+    placeHolderShape.strokeColor =   [UIColor colorWithRed:0.95 green:0.27 blue:0.27 alpha:1.0].CGColor;
+    placeHolderShape.lineWidth = 10;
+    placeHolderShape.position = self.view.center;
+    placeHolderShape.lineCap = kCALineCapRound;
+    placeHolderShape.fillColor = [UIColor blackColor].CGColor;
+    [self.view.layer addSublayer:placeHolderShape];
+}
+
+- (void)pulseShape2:(UIBezierPath *)path {
     pulseShape2 = [[CAShapeLayer alloc] init];
     pulseShape2.path = path.CGPath;
     pulseShape2.strokeColor = [UIColor clearColor].CGColor;
@@ -45,26 +38,52 @@
     pulseShape2.lineCap = kCALineCapRound;
     pulseShape2.fillColor =  [UIColor colorWithRed:0.95 green:0.27 blue:0.27 alpha:0.6].CGColor;
     [self.view.layer addSublayer:pulseShape2];
-    
-    placeHolderShape.path = path.CGPath;
-    placeHolderShape.strokeColor =   [UIColor colorWithRed:0.95 green:0.27 blue:0.27 alpha:1.0].CGColor;
-    placeHolderShape.lineWidth = 10;
-    placeHolderShape.position = self.view.center;
-    placeHolderShape.lineCap = kCALineCapRound;
-    placeHolderShape.fillColor = [UIColor blackColor].CGColor;
-    [self.view.layer addSublayer:placeHolderShape];
+}
 
-    [self aniamatitePulsingLayer];
-    
+- (void)pulseShape:(UIBezierPath *)path {
+    pulseShape = [[CAShapeLayer alloc] init];
+    pulseShape.path = path.CGPath;
+    pulseShape.strokeColor = [UIColor clearColor].CGColor;
+    pulseShape.lineWidth = 10;
+    pulseShape.position = self.view.center;
+    pulseShape.lineCap = kCALineCapRound;
+    pulseShape.fillColor =  [UIColor colorWithRed:0.95 green:0.27 blue:0.27 alpha:0.4].CGColor;
+    [self.view.layer addSublayer:pulseShape];
+}
+
+- (UIBezierPath *)createBezierPath {
+    UIBezierPath *path = [[UIBezierPath alloc] init];
+    [path   addArcWithCenter:CGPointZero radius:100.0 startAngle:-M_PI_2 endAngle:M_PI_2 *4 clockwise:true];
+    return path;
+}
+
+- (void)createMainShape:(UIBezierPath *)path {
     shape = [[CAShapeLayer alloc] init];
     shape.path = path.CGPath;
-    shape.strokeColor = [UIColor greenColor].CGColor;
+    shape.strokeColor = [UIColor redColor].CGColor;
     shape.lineWidth = 20;
     shape.strokeEnd = 0.0;
     shape.position = self.view.center;
     shape.lineCap = kCALineCapRound;
     shape.fillColor = [UIColor clearColor].CGColor;
     [self.view.layer addSublayer:shape];
+}
+
+- (void)viewDidLoad {
+    [super viewDidLoad];
+    // Do any additional setup after loading the view, typically from a nib.
+    
+    self.view.backgroundColor = [UIColor blackColor];
+    UIBezierPath * path = [self createBezierPath];
+    
+    [self pulseShape:path];
+    [self pulseShape2:path];
+    //CGPathRef
+    [self addPlacHolderLayerWithPath:path];
+
+    [self aniamatitePulsingLayer];
+    
+    [self createMainShape:path];
     
     [self.view addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapCircle)]];
     [self addProgressLabel];
@@ -83,7 +102,7 @@
     [self.view addSubview:lblProgress];
 }
 
--(void) aniamatitePulsingLayer{
+- (void)addanimation1 {
     CABasicAnimation * animate = [[CABasicAnimation alloc] init];
     animate.keyPath = @"transform.scale";
     animate.toValue = @(1.2);
@@ -92,7 +111,9 @@
     animate.autoreverses = true;
     animate.repeatCount = INFINITY;
     [pulseShape addAnimation:animate forKey:@"pulsing"];
-    
+}
+
+- (void)addanimation2 {
     CABasicAnimation * animate2 = [[CABasicAnimation alloc] init];
     animate2.keyPath = @"transform.scale";
     animate2.toValue = @(1.15);
@@ -101,6 +122,11 @@
     animate2.autoreverses = true;
     animate2.repeatCount = INFINITY;
     [pulseShape2 addAnimation:animate2 forKey:@"pulsing"];
+}
+
+-(void) aniamatitePulsingLayer{
+    [self addanimation1];
+    [self addanimation2];
 }
 
 -(void) tapCircle{
@@ -146,5 +172,3 @@
 }
 
 @end
-
-
